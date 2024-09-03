@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Emoji generator</title>
+        <style>
+            html {
+                background-color: #f6f6f7;
+            }
+
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: top;
+                margin: 0;
+                font-family: Mulish, sans-serif;
+            }
+
+            form {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin-bottom: 1rem;
+            }
+            form button {
+                padding: 0.5rem;
+                margin: 1rem;
+                width: 200px;
+                font-size: 1rem;
+                border: 1px solid #d1d5db;
+                border-radius: 0.375rem;
+                background-color: #000;
+                color: #fff;
+                cursor: pointer;
+            }
+            p {
+                margin-bottom: 1rem;
+                max-width: 30rem;
+                font-size: 0.8rem;
+
+                color: #014847;
+            }
+            form input {
+                padding: 0.5rem;
+                font-size: 1rem;
+                border: 1px solid #d1d5db;
+                border-radius: 0.375rem;
+                margin-right: 0.5rem;
+                width: 300px;
+            }
+            img {
+                margin-top: 1rem;
+                max-width: 300px;
+            }
+            .info span {
+                color: #382aa4;
+            }
+
+            ul {
+                list-style-type: none;
+                padding: 0;
+            }
+
+            li {
+                border-radius: 0.375rem;
+                border: 1px solid #d1d5db;
+                padding: 0.5rem 2rem;
+                cursor: pointer;
+                margin-bottom: 0.5rem;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <h4>Emoji generator</h4>
+        <p>
+            Enter a text to generate an emoji. The text will be sent as a query
+            to the Netlify Function, and the response will be cached using
+            Netlify's caching primitives
+        </p>
+        <form>
+            <input type="text" />
+            <button type="submit">generate</button>
+        </form>
+        <div id="loading"></div>
+        <img hidden alt="Generated emoji" id="generated" />
+        <div class="info">
+            <p>Cache status: <span id="cache-status">none</span></p>
+        </div>
+
+        <h4>Popular searches:</h4>
+        <div class="options">
+            <ul>
+                <li>turtle with a police hat</li>
+                <li>squirrel with a thumbsup</li>
+            </ul>
+        </div>
+    </body>
+    <script type="text/javascript">
+        let loadingInterval = null;
+        const startLoading = () => {
+            const texts = ["Loading", "Loading.", "Loading..", "Loading..."];
+            const loadingElement = document.querySelector("#loading");
+            let index = 0;
+            loadingInterval = setInterval(() => {
+                loadingElement.innerText = texts[index];
+                index = (index + 1) % texts.length;
+            }, 500);
+        };
+
+        const stopLoading = () => {
+            clearInterval(loadingInterval);
+            document.querySelector("#loading").innerText = "";
+        };
+
+        async function generateAndReplaceImage(text) {
+            startLoading();
+            const emojiText = encodeURIComponent(text);
+            const rawResponse = await fetch(
+                `./generate-emoji?query=${emojiText}`,
+            );
+            const response = await rawResponse.json();
+            debugger;
+            const cacheHeaders = rawResponse.headers.get("cache-status");
+            const { image_url } = response;
+            const img = document.querySelector("#generated");
+            img.src = image_url;
+            img.hidden = false;
+
+            document.querySelector("#cache-status").innerText = cacheHeaders;
+            stopLoading();
+        }
+        const handleSubmit = (event) => {
+            event.preventDefault();
+            const input = document.querySelector("form input");
+            generateAndReplaceImage(input.value);
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document
+                .querySelector("form")
+                .addEventListener("submit", handleSubmit);
+
+            document
+                .querySelector(".options")
+                .addEventListener("click", (event) => {
+                    const text = event.target.innerText;
+                    document.querySelector("form input").value = text;
+                    generateAndReplaceImage(text);
+                });
+        });
+    </script>
+</html>
