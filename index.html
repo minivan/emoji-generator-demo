@@ -37,8 +37,9 @@
             }
             p {
                 margin-bottom: 1rem;
-                max-width: 30rem;
+                max-width: 40rem;
                 font-size: 0.8rem;
+                text-align: center;
 
                 color: #014847;
             }
@@ -87,7 +88,10 @@
         <div id="loading"></div>
         <img hidden alt="Generated emoji" id="generated" />
         <div class="info">
-            <p>Cache status: <span id="cache-status">none</span></p>
+            <p>
+                Cache status: <span id="cache-status">none</span>; Will expire
+                in: <span id="cache-expiration">none</span> hours
+            </p>
         </div>
 
         <h4>Popular searches:</h4>
@@ -109,12 +113,30 @@
             loadingInterval = setInterval(() => {
                 loadingElement.innerText = texts[index];
                 index = (index + 1) % texts.length;
-            }, 500);
+            }, 300);
         };
 
         const stopLoading = () => {
             clearInterval(loadingInterval);
             document.querySelector("#loading").innerText = "";
+        };
+
+        const replaceImage = (url) => {
+            const img = document.querySelector("#generated");
+            img.src = url;
+            img.hidden = false;
+        };
+        const replaceHeaders = (cacheHeaders) => {
+            const cacheStatus = document.querySelector("#cache-status");
+            cacheStatus.innerText = cacheHeaders;
+
+            const ttl = cacheHeaders.match(/(\d+)/);
+            if (ttl) {
+                const cacheExpiration =
+                    document.querySelector("#cache-expiration");
+                const seconds = parseInt(ttl[0]);
+                cacheExpiration.innerText = `${Math.round(seconds / (60 * 60))}`;
+            }
         };
 
         async function generateAndReplaceImage(text) {
@@ -124,15 +146,13 @@
                 `./generate-emoji?query=${emojiText}`,
             );
             const response = await rawResponse.json();
-            const cacheHeaders = rawResponse.headers.get("cache-status");
-            const { image_url } = response;
-            const img = document.querySelector("#generated");
-            img.src = image_url;
-            img.hidden = false;
-
-            document.querySelector("#cache-status").innerText = cacheHeaders;
-            stopLoading();
+            replaceImage(response.image_url);
+            replaceHeaders(rawResponse.headers.get("cache-status"));
+            setTimeout(() => {
+                stopLoading();
+            }, 300);
         }
+
         const handleSubmit = (event) => {
             event.preventDefault();
             const input = document.querySelector("form input");
