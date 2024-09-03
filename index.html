@@ -95,6 +95,8 @@
             <ul>
                 <li>turtle with a police hat</li>
                 <li>squirrel with a thumbsup</li>
+                <li>cat with a cake hat</li>
+                <li>dog with a cowboy hat</li>
             </ul>
         </div>
     </body>
@@ -122,7 +124,6 @@
                 `./generate-emoji?query=${emojiText}`,
             );
             const response = await rawResponse.json();
-            debugger;
             const cacheHeaders = rawResponse.headers.get("cache-status");
             const { image_url } = response;
             const img = document.querySelector("#generated");

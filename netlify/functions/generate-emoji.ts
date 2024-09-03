@@ -19,7 +19,10 @@ export default async (request: Request, context: Context) => {
   return Response.json(
     { image_url },
     {
-      headers: { "cache-control": "s-maxage=604800", "Netlify-Vary": "query" },
+      headers: {
+        "Netlify-CDN-Cache-Control": "public, max-age=86400, durable",
+        "Netlify-Vary": "query",
+      },
     },
   );
 };
