@@ -76,7 +76,7 @@
                 </p>
                 <p>
                     Will
-                    expire in: <code id="cache-expiration">none</code> hours
+                    expire in: <code id="cache-expiration">none</code> minutes
                 </p>
             </div>
 
@@ -116,7 +116,7 @@
                     const cacheExpiration =
                         document.querySelector("#cache-expiration");
                     const seconds = parseInt(ttl[0]);
-                    cacheExpiration.innerText = `${Math.round(seconds / (60 * 60))}`;
+                    cacheExpiration.innerText = `${Math.round(seconds / 60)}`;
                 }
             }
         };
