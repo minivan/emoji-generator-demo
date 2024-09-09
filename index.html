@@ -3,106 +3,84 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+            rel="preload"
+            href="https://example-styles.netlify.app/fonts/PacaembuVar-latin.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin
+        />
+        <link
+            rel="preload"
+            href="https://example-styles.netlify.app/fonts/MulishVar-latin.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin
+        />
+        <link
+            rel="stylesheet"
+            href="https://example-styles.netlify.app/styles.css"
+        />
         <title>Emoji generator</title>
         <style>
-            html {
-                background-color: #f6f6f7;
-            }
-
-            body {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: top;
-                margin: 0;
-                font-family: Mulish, sans-serif;
-            }
-
-            form {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                margin-bottom: 1rem;
-            }
-            form button {
-                padding: 0.5rem;
-                margin: 1rem;
-                width: 200px;
-                font-size: 1rem;
-                border: 1px solid #d1d5db;
-                border-radius: 0.375rem;
-                background-color: #000;
-                color: #fff;
-                cursor: pointer;
-            }
-            p {
-                margin-bottom: 1rem;
-                max-width: 40rem;
-                font-size: 0.8rem;
-                text-align: center;
-
-                color: #014847;
-            }
-            form input {
-                padding: 0.5rem;
-                font-size: 1rem;
-                border: 1px solid #d1d5db;
-                border-radius: 0.375rem;
-                margin-right: 0.5rem;
-                width: 300px;
-            }
             img {
-                margin-top: 1rem;
                 max-width: 300px;
-            }
-            .info span {
-                color: #382aa4;
-            }
-
-            ul {
-                list-style-type: none;
-                padding: 0;
-            }
-
-            li {
-                border-radius: 0.375rem;
-                border: 1px solid #d1d5db;
-                padding: 0.5rem 2rem;
-                cursor: pointer;
-                margin-bottom: 0.5rem;
-                text-align: center;
+                border-radius: 10px;
+                margin: auto
             }
         </style>
     </head>
     <body>
-        <h4>Emoji generator</h4>
-        <p>
-            Enter a text to generate an emoji. The text will be sent as a query
-            to the Netlify Function, and the response will be cached using
-            Netlify's caching primitives
-        </p>
-        <form>
-            <input type="text" />
-            <button type="submit">generate</button>
-        </form>
-        <div id="loading"></div>
-        <img hidden alt="Generated emoji" id="generated" />
-        <div class="info">
-            <p>
-                Cache status: <span id="cache-status">none</span>; Will expire
-                in: <span id="cache-expiration">none</span> hours
-            </p>
-        </div>
+        <header>
+            <nav>
+                <a href="https://www.netlify.com/">
+                    <img
+                        src="https://example-styles.netlify.app/images/logo-netlify-small-monochrome-darkmode.svg"
+                        alt="Netlify"
+                        class="nf-logo"
+                    />
+                </a>
+            </nav>
+            <section>
+                <h1>Emoji generator</h1>
+                <p>
+                    Enter a text to generate an emoji. The text will be sent as
+                    a query to the Netlify Function, and the response will be
+                    cached using Netlify's caching primitives. More in the
+                    <a href="https://docs.netlify.com/">docs</a>
+                </p>
+            </section>
+        </header>
+        <section>
+            <form>
+                <input type="text" placeholder="two thumbs up" />
+                <button type="submit">Generate Emoji</button>
 
-        <h4>Popular searches:</h4>
-        <div class="options">
-            <ul>
-                <li>turtle with a police hat</li>
-                <li>squirrel with a thumbsup</li>
-                <li>cat with a cake hat</li>
-                <li>dog with a cowboy hat</li>
-            </ul>
-        </div>
+                <div class="options">
+                    <p>Or try some popular options: </p>
+                        <a href="#" class="btn-secondary js-option">turtle with a police hat</a>
+                        <a href="#" class="btn-secondary js-option">cat with a cake hat</a>
+                        <a href="#" class="btn-secondary js-option">raining cowboy hats</a>
+
+                <p id="loading"></p>
+            </form>
+            <div class="image-container" hidden>
+                <img
+                    alt="Generated emoji"
+                    id="generated"
+                />
+            </div>
+            <div class="panel js-info" style="text-align: center; padding: 0.5em;" hidden>
+                <p>
+                    Cache status: <code id="cache-status">none</code>
+                </p>
+                <p>
+                    Will
+                    expire in: <code id="cache-expiration">none</code> hours
+                </p>
+            </div>
+
+        </section>
     </body>
     <script type="text/javascript">
         let loadingInterval = null;
@@ -124,18 +102,22 @@
         const replaceImage = (url) => {
             const img = document.querySelector("#generated");
             img.src = url;
-            img.hidden = false;
+            img.parentElement.hidden = false;
         };
         const replaceHeaders = (cacheHeaders) => {
+            document.querySelector(".js-info").hidden = false;
             const cacheStatus = document.querySelector("#cache-status");
             cacheStatus.innerText = cacheHeaders;
 
-            const ttl = cacheHeaders.match(/(\d+)/);
-            if (ttl) {
-                const cacheExpiration =
-                    document.querySelector("#cache-expiration");
-                const seconds = parseInt(ttl[0]);
-                cacheExpiration.innerText = `${Math.round(seconds / (60 * 60))}`;
+            if(cacheHeaders) {
+                cacheStatus.innerText = cacheHeaders;
+                const ttl = cacheHeaders.match(/(\d+)/);
+                if (ttl) {
+                    const cacheExpiration =
+                        document.querySelector("#cache-expiration");
+                    const seconds = parseInt(ttl[0]);
+                    cacheExpiration.innerText = `${Math.round(seconds / (60 * 60))}`;
+                }
             }
         };
 
@@ -165,11 +147,13 @@
                 .addEventListener("submit", handleSubmit);
 
             document
-                .querySelector(".options")
-                .addEventListener("click", (event) => {
-                    const text = event.target.innerText;
-                    document.querySelector("form input").value = text;
-                    generateAndReplaceImage(text);
+                .querySelectorAll(".js-option").forEach((element) => {
+                    element.addEventListener("click", (event) => {
+                        event.preventDefault();
+                        const text = event.target.innerText;
+                        document.querySelector("form input").value = text;
+                        generateAndReplaceImage(text);
+                    });
                 });
         });
     </script>
